@@ -1,4 +1,10 @@
-# Storia del pensiero economico
+# Pianifica esami Unimarconi - Sede Roma
+
+Questo progetto è realizzato per interesse personale, non è in alcun modo da considerarsi ufficiale. 
+
+Puoi usare la app qui: https://gianlucanatali.github.io/pianifica-esami-unimarconi/
+
+
 
 ## Running the samples locally
 
