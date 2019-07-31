@@ -126,6 +126,7 @@ table.blueTable {
     padding: 8px 16px;
     margin: 5px 5px;
     background-color: #ccc;
+    cursor: pointer;
   }
   
   p.round:hover {
@@ -146,3 +147,20 @@ table.blueTable {
   .round {
     border-radius: 50%;
   }
+
+  .removeAppelloBtn{
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  @media print { 
+    .noprint { 
+       display: none; 
+    } 
+ }
+
+ #tableTitle {
+   margin-top:20px;
+   text-align: center;
+   width: 100%;
+ }

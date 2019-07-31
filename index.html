@@ -2,6 +2,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Pianifica Esami</title>
+    <link rel="shortcut icon" type="image/png" href="/favicon.png"/>
     <!--Loading Extenal libs - START -->
     <link rel="stylesheet" href="assets/libs/nouislider/nouislider.min.css"/>
     
@@ -23,6 +25,8 @@
     <link rel="stylesheet" type="text/css" href="https://uicdn.toast.com/tui-calendar/latest/tui-calendar.css" />
 
     <script type='text/javascript' src='assets/libs/persistjs/persist-min.js'></script>
+    <script type='text/javascript' src='assets/libs/bootbox/bootbox.min.js'></script>
+    
     <!-- If you use the default popups, use this. 
     <link rel="stylesheet" type="text/css" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.css" />
     <link rel="stylesheet" type="text/css" href="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.css" />
@@ -37,7 +41,7 @@
 </head>
 
 <body>
-    <div id='mainBody' >
+    <div id='mainBody' class="noprint">
         <div id='filterBar'>
             <form>
                 <select id="cdlSelect">
@@ -60,34 +64,15 @@
             <span id="renderRange" ></span>
         </div>
 
-        <!--
-        <div id="calendarMenu">
-            <span id="menu-navi"><button type="button" class="calendar-btn calendar-move-today">Today</button>
-                <button type="button" class="calendar-btn calendar-move-day">
-                    <i class="calendar-icon ic-arrow-line-left"></i>
-                </button>
-                <button type="button" class="calendar-btn calendar-move-day">
-                    <i class="calendar-icon ic-arrow-line-right"></i>
-                </button>
-            </span>
-            <span class="calendar-render-range"></span>
-        </div>
-        -->
-        
-          
+
         <div id="calendar"></div>
+
+        
     </div>
+    <h1 id="tableTitle">Lista Appelli Scelti</h1>
+    <div id="dynamicTable"></div>
     
-    <!--
-    <div id="groupSelector">
-        <input type="checkbox" class="cGroups" name="acs" value="Opere" checked>Opere<br>
-        <input type="checkbox" class="cGroups" name="acs" value="Autori" checked>Autori<br>
-        <input type="checkbox" class="cGroups" name="acs" value="Eventi storici/economici" checked>Eventi storici/economici<br>
-        <input type="checkbox" class="cGroups" name="acs" value="Teorie Economiche" checked>Teorie Economiche<br>
-        <input type="checkbox" class="cGroups" name="acs" value="Eventi storici" checked>Eventi storici<br>
-        <input type="checkbox" class="cGroups" name="acs" value="Periodizzazione" checked>Periodizzazione<br>
-    </div>
-    -->
+   
 
 </body>
 </html>

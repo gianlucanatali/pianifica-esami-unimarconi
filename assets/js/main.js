@@ -15,6 +15,8 @@ $(function() {
         configObj = JSON.parse(configObjStored);
     }else{
         configObj = {
+            esamiPianificati: [],
+            appelliScelti: [] 
         };
     }
 
@@ -107,17 +109,33 @@ function loadAppelli() {
 
         $.each( data.data, function( key, val ) {
             if(selectedExams.includes(val.id)){
+                if(configObj.appelliScelti.includes(JSON.stringify(val))){
+                    addTableRow(tableArr[1],key,val);
+                }
+                if(!configObj.esamiPianificati.includes(val.ssd)
+                    ||configObj.appelliScelti.includes(JSON.stringify(val))){
 
-                addTableRow(tableArr[1],key,val);
-                var event =getScheduleConfig(key,val);
-                if(event){
-                    calEvents.push(event);
+                    var event = getScheduleConfig(key,val);
+                    if(event){
+                        calEvents.push(event);
+                    }
                 }
                 
             }
         });
 
         createTableFooter(tableArr[0]);
+        sortTable();
+
+        var inputs = $(".removeAppelloBtn");
+        inputs.each(function(){ 
+            $(this).click(function(){
+                //console.log(this,$(this).attr('data-event'));
+                rimuoviAppello(JSON.parse($(this).attr('data-event')));
+            });
+            //show expression (for debug)
+        });
+
         var myCal=prepareCalendar(calEvents);
 
         setRenderRangeText(myCal);
@@ -156,11 +174,11 @@ function getScheduleConfig(key,val){
         "id": key,
         "calendarId": '1',
         "title": '('+val.ssd+') '+ val.disciplina,
-        "body": 'Docente: '+val.docente,
+        "body": JSON.stringify(val),
         "category": 'time',
         "dueDateClass": '',
         "start": examTime.toDate(),
-        "end": examTime.add(5,'hours').toDate(),
+        "end": '',
         "isReadOnly": true    // schedule is read-only*/
     }
 }
@@ -172,19 +190,18 @@ function addTableRow($tbody,key,val){
     .append("<td>"+val.disciplina+"</td>")
     .append("<td>"+val.docente+"</td>")
     .append("<td>"+formatDate(val.data)+"</td>")
-    .append("<td>"+val.orario+"</td>");
+    .append("<td>"+val.orario+"</td>")
+    .append("<td class='noprint'><p class='removeAppelloBtn' data-event='"+JSON.stringify(val).replace("'","&#x27;")+"'>Rimuovi</p></td>");
     //return $body;
 }
 
 function createTableHeader(){
 
     // create table
-    var $table = $('<table class="blueTable">');
-    // caption
-    $table.append('<caption>MyTable</caption>')
+    var $table = $('<table id="tableAppelli" class="blueTable">');
     // thead
-    .append('<thead>').children('thead')
-    .append('<tr />').children('tr').append('<th>CDL</th><th>SSD</th><th>Disciplina</th><th>Docente</th><th>Data</th><th>Orario</th>');
+    $table.append('<thead>').children('thead')
+    .append('<tr />').children('tr').append('<th>CDL</th><th>SSD</th><th>Disciplina</th><th>Docente</th><th>Data</th><th>Orario</th><th class="noprint"></th>');
 
     //tbody
     var $tbody = $table.append('<tbody />').children('tbody');
@@ -240,23 +257,74 @@ function persistConfigObj(){
 }
 
 
+
+function scegliAppello(appello){
+    configObj.esamiPianificati.push(appello.ssd);
+    configObj.appelliScelti.push(JSON.stringify(appello));
+    persistConfigObj();
+    loadAppelli();
+}
+
+function rimuoviAppello(appello){
+    configObj.esamiPianificati.remove(appello.ssd);
+    configObj.appelliScelti.remove(JSON.stringify(appello));
+    persistConfigObj();
+    loadAppelli();
+}
+
+function openDialog(e){
+    var eventDetails = JSON.parse(e.schedule.body);
+    var dialogConfig = {
+        title: e.schedule.title,
+        message: "<p>Data: "+moment(e.schedule.start.getTime()).format('LL')+"</p>"
+                +"<p>Orario: "+eventDetails.orario+"</p>"
+                +"<p>Docente: "+eventDetails.docente+"</p>",
+        size: 'large',
+        buttons: {
+            
+        }
+    };
+    if(!configObj.esamiPianificati.includes(eventDetails.ssd)){
+        dialogConfig.buttons.ok = {
+            label: "Scegli Appello",
+            className: 'btn-info',
+            callback: function(){
+                scegliAppello(eventDetails)
+            }
+        }
+    }else{
+        dialogConfig.buttons.cancel = {
+            label: "Rimuovi da Pianificati",
+            className: 'btn-danger',
+            callback: function(){
+                rimuoviAppello(eventDetails)
+            }
+        }
+    }
+    var dialog = bootbox.dialog(dialogConfig);
+    
+}
+
+
 function prepareCalendar(calEvents) {
     $("#calendar").empty();
     var calendar = new tui.Calendar(document.getElementById('calendar'), {
         defaultView: 'month',
         usageStatistics: false,
-        useDetailPopup: true,
+        useCreationPopup: false,
+        useDetailPopup: false,
         disableClick: true,
-        taskView: true/*,
-        template: {
-            monthGridHeader: function(model) {
-              var date = new Date(model.date);
-              var template = '<span class="tui-full-calendar-weekday-grid-date">' + date.getDate() + '</span>';
-              return template;
-            }
-          }*/
+        taskView: true
       });
       calendar.createSchedules(calEvents);
+
+      // event handlers
+      calendar.on({
+            'clickSchedule': function(e) {
+                console.log('clickSchedule', e);
+                openDialog(e);
+            }
+      });
       return calendar;
     /*
     $('#calendar').tuiCalendar({
@@ -267,3 +335,49 @@ function prepareCalendar(calEvents) {
       }).createSchedules(calEvents);*/
 
 }
+
+Array.prototype.remove = function() {
+    var what, a = arguments, L = a.length, ax;
+    while (L && this.length) {
+        what = a[--L];
+        while ((ax = this.indexOf(what)) !== -1) {
+            this.splice(ax, 1);
+        }
+    }
+    return this;
+};
+
+function sortTable() {
+    var table, rows, switching, i, x, y, shouldSwitch;
+    table = document.getElementById("tableAppelli");
+    switching = true;
+    /* Make a loop that will continue until
+    no switching has been done: */
+    while (switching) {
+      // Start by saying: no switching is done:
+      switching = false;
+      rows = table.rows;
+      /* Loop through all table rows (except the
+      first, which contains table headers): */
+      for (i = 1; i < (rows.length - 1); i++) {
+        // Start by saying there should be no switching:
+        shouldSwitch = false;
+        /* Get the two elements you want to compare,
+        one from current row and one from the next: */
+        x = moment(rows[i].getElementsByTagName("TD")[4].innerHTML+" "+rows[i].getElementsByTagName("TD")[5].innerHTML,"DD MMMM YYYY HH:mm");
+        y = moment(rows[i+1].getElementsByTagName("TD")[4].innerHTML+" "+rows[i+1].getElementsByTagName("TD")[5].innerHTML,"DD MMMM YYYY HH:mm");
+        // Check if the two rows should switch place:
+        if (x.isAfter(y)) {
+          // If so, mark as a switch and break the loop:
+          shouldSwitch = true;
+          break;
+        }
+      }
+      if (shouldSwitch) {
+        /* If a switch has been marked, make the switch
+        and mark that a switch has been done: */
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+      }
+    }
+  }
