@@ -10,11 +10,16 @@ var configObj;
 $(function() {
 
     store = new Persist.Store('Pianifica Esami');
+    debugger;
     configObjStored = store.get('configObj');
-    if(configObjStored){
+    var objVersion = 2;
+    var restoreObj=configObjStored&&configObjStored.version===objVersion;
+    if(restoreObj){
         configObj = JSON.parse(configObjStored);
     }else{
+
         configObj = {
+            version: objVersion,
             esamiPianificati: [],
             appelliScelti: [] 
         };
