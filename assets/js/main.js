@@ -6,24 +6,11 @@ x.add(option, x[0]);
 
 var store;
 var configObj;
+var storeName="Pianifica Esami";
 
 $(function() {
 
-    store = new Persist.Store('Pianifica Esami');
-    debugger;
-    configObjStored = store.get('configObj');
-    var objVersion = 2;
-    var restoreObj=configObjStored&&configObjStored.version===objVersion;
-    if(restoreObj){
-        configObj = JSON.parse(configObjStored);
-    }else{
-
-        configObj = {
-            version: objVersion,
-            esamiPianificati: [],
-            appelliScelti: [] 
-        };
-    }
+    loadConfigObj();
 
     moment.locale('it'); 
     
@@ -259,6 +246,25 @@ function setRenderRangeText(cal) {
 function persistConfigObj(){
     var myJSON = JSON.stringify(configObj);
     store.set('configObj', myJSON);
+}
+
+function loadConfigObj(){
+    store = new Persist.Store(storeName);
+    configObjStored = store.get('configObj');
+    var objVersion = 2;
+    var recreateObj=true;
+    if(configObjStored){
+        configObj = JSON.parse(configObjStored);
+        if(configObj.version===objVersion){
+            recreateObj=false;
+        }
+    }
+    
+    if(recreateObj){
+        configObj = {
+            version: objVersion
+        };
+    }
 }
 
 
